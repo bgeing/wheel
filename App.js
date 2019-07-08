@@ -2,129 +2,184 @@ import React from 'react';
 import {
     StyleSheet,
     View,
-    Text
+    ImageBackground,
+    Image,
+    TouchableHighlight,
+    TouchableOpacity,
+    Animated,
+    Easing
 } from 'react-native';
+import WinnerBanner from "./component/WinnerBanner";
+import ResultModal from "./component/ResultModal";
 
-class App extends React.Component {
+
+export default class App extends React.Component {
+
+    state = {
+        angle: new Animated.Value(0),
+        enabled: true,
+        light: 0,
+        modalOpen: false,
+        res: 0
+    };
+
+    componentDidMount() {
+        setInterval(this._toggleLight.bind(this), 500);
+    }
+
+    openModal = () => {
+        this.setState({
+            modalOpen: true
+        })
+    };
+
+    closeModal = () => {
+        this.setState({
+            modalOpen: false,
+            angle: new Animated.Value(0),
+            enabled: true
+        })
+    };
+
+    _toggleLight = () => {
+        this.setState({
+            light: this.state.light === 0 ? 1 : 0
+        })
+    };
+
+    getResult = () => {
+        // Todo: Async request
+        return Math.floor(Math.random() * 6);
+    };
+
+    spin = async () => {
+        if (this.state.enabled) {
+            let res = await this.getResult();
+            this.setState({
+                enabled: false,
+                res
+            }, () => {
+                Animated.sequence([
+                    Animated.timing(this.state.angle, {
+                        toValue: 1,
+                        duration: 5000,
+                        easing: Easing.in,
+                        useNativeDriver: true
+                    }),
+                ]).start(() => {
+                    setTimeout(this.openModal.bind(this), 1000);
+                })
+            });
+        }
+    };
+
+    _renderWheel = () => {
+        return (
+            <ImageBackground source={require('./static/images/bg.png')} style={styles.container}>
+                <View>
+                    <Image source={require('./static/images/slogn.png')} style={styles.slogan}/>
+                </View>
+                <Image source={require('./static/images/piaofu.png')} style={styles.float}/>
+                <WinnerBanner/>
+                <View style={{justifyContent: 'center', alignItems: 'center'}}>
+                    <Image source={require('./static/images/panbg.png')} style={styles.wheelBg}/>
+                    {
+                        this.state.light === 0 ?
+                            <Image source={require('./static/images/deng1.png')} style={styles.light}/> :
+                            <Image source={require('./static/images/deng2.png')} style={styles.light}/>
+                    }
+                    <Animated.View style={[styles.wheelContainer, {
+                        transform: [
+                            {
+                                rotate: this.state.angle.interpolate({
+                                    inputRange: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1],
+                                    outputRange: ['0deg', '180deg', '360deg', '720deg', '1080deg', '1800deg', '2520deg', '3060deg', '3420deg', '3600deg', `${3600 + this.state.res * 60}deg`]
+                                })
+                            }
+                        ]
+                    }]}>
+                        <Image source={require('./static/images/panneiquan.png')} style={styles.wheel}/>
+                    </Animated.View>
+                    <TouchableOpacity style={styles.playBtnContainer} onPress={this.spin}>
+                        <Image source={require('./static/images/choujiangbt.png')} style={styles.playBtn}/>
+                    </TouchableOpacity>
+                </View>
+                <View style={styles.submitContainer}>
+                    <TouchableHighlight>
+                        <Image source={require('./static/images/button.png')} style={styles.submit}/>
+                    </TouchableHighlight>
+                </View>
+            </ImageBackground>
+        );
+    };
 
     render() {
         return (
             <View style={styles.container}>
-                <View style={styles.bubble1} />
-                <View style={styles.bubble2} />
-                <View style={styles.bubble3} />
-                <View>
-                    <Text style={styles.title}>Winning Record</Text>
-                </View>
-                <View style={styles.listContainer}>
-                    <View style={styles.header}>
-                        <Text style={styles.headerTitle}>time</Text>
-                        <Text style={styles.headerTitle}>Prize</Text>
-                    </View>
-                    <View style={styles.list}>
-                        <View style={styles.row}>
-                            <Text style={styles.time}>{"June 20,2019 22:43"}</Text>
-                            <Text style={styles.value}>{"0.01CAIC"}</Text>
-                        </View>
-                        <View style={styles.row}>
-                            <Text style={styles.time}>{"June 20,2019 22:43"}</Text>
-                            <Text style={styles.value}>{"0.01CAIC"}</Text>
-                        </View>
-                    </View>
-                </View>
+                {this._renderWheel()}
+                <ResultModal isOpen={this.state.modalOpen} closeModal={this.closeModal} point={10}/>
             </View>
-        )
+        );
     }
 }
 
 const styles = StyleSheet.create({
     container: {
-        backgroundColor: '#9745dd',
         width: '100%',
         height: '100%',
         flex: 1,
         flexDirection: 'column',
-        justifyContent: 'flex-start',
-        alignItems: 'center'
+        alignItems: 'center',
+        justifyContent: 'center'
     },
-    bubble1: {
+    slogan: {
+        width: 200,
+        height: 152,
+        zIndex: 1
+    },
+    float: {
         position: 'absolute',
-        backgroundColor: 'rgb(254, 100, 141)',
-        width: 150,
-        height: 150,
-        top: -60,
-        left: -60,
-        borderRadius: 75
+        width: '100%',
+        height: 220,
+        zIndex: 1,
+        top: 135
     },
-    bubble2: {
+    wheelBg: {
+        width: 320,
+        height: 320
+    },
+    submitContainer: {
+        marginTop: 20
+    },
+    light: {
         position: 'absolute',
-        backgroundColor: 'rgba(254, 170, 133, 0.5)',
-        width: 80,
-        height: 80,
-        top: 30,
-        left: 30,
-        borderRadius: 40
+        width: 310,
+        height: 310,
+        zIndex: 1
     },
-    bubble3: {
+    wheelContainer: {
         position: 'absolute',
-        backgroundColor: '#df54f1',
-        width: 90,
-        height: 90,
-        top: -30,
-        right: -30,
-        borderRadius: 45
     },
-    title: {
-        fontSize: 30,
-        fontWeight: '800',
-        color: '#fff',
-        marginTop: 80
+    wheel: {
+        width: 300,
+        height: 300
     },
-    listContainer: {
-        backgroundColor: '#fff',
-        flex: 1,
-        width: '80%',
-        marginTop: 15,
-        marginBottom: 50,
-        borderRadius: 10
-    },
-    header: {
-        flexDirection: 'row',
-        justifyContent: 'space-around',
-        alignItems: 'flex-start',
-        marginLeft: 15,
-        marginRight: 15,
-        borderBottomWidth: 1,
-        borderBottomColor: '#eee',
-        maxHeight: 50
-    },
-    headerTitle: {
-        fontSize: 20,
-        color: '#333',
-        marginTop: 15,
-        marginBottom: 15
-    },
-    list: {
-        flex: 1,
-        flexDirection: 'column',
-        justifyContent: 'flex-start',
-        paddingTop: 15,
-        paddingBottom: 15
-    },
-    row: {
+    playBtnContainer: {
+        position: 'absolute',
         flex: 1,
         flexDirection: 'row',
-        justifyContent: 'space-around',
-        maxHeight: 40
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 2
     },
-    time: {
-        fontSize: 18,
-        color: '#999'
+    playBtn: {
+        marginTop: 10,
+        marginLeft: 10,
+        width: 250,
+        height: 242
     },
-    value: {
-        fontSize: 18,
-        color: '#000'
+    submit: {
+        width: 250,
+        height: 62.5
     }
 });
-
-export default App;
