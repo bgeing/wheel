@@ -7,6 +7,38 @@ import {
 
 class Record extends React.Component {
 
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            history: []
+        }
+    }
+
+    componentDidMount() {
+        axios.post('18.162.114.41:80/api/v1/gameinfo/get_draw_history', {
+            requestID: "1234567890",
+            appID: "",
+            userID: "abcd1234",
+            token: "abcefghijklmnopqrstuvewxyz"
+        })
+            .then(res => {
+                this.setState({
+                    history: res.data.history
+                })
+            });
+    }
+
+    getDate = (timestamp) => {
+        let date = new Date(timestamp);
+        let month = date.getMonth() + 1,
+            day = date.getDate(),
+            year = date.getFullYear(),
+            hour = "0" + date.getHours(),
+            minute = "0" + data.getMinutes();
+        return `${month} ${day},${year} ${hour.substr(-2)}:${minute.substr(-2)}}`;
+    };
+
     render() {
         return (
             <View style={styles.container}>
@@ -22,14 +54,16 @@ class Record extends React.Component {
                         <Text style={styles.headerTitle}>Prize</Text>
                     </View>
                     <View style={styles.list}>
-                        <View style={styles.row}>
-                            <Text style={styles.time}>{"June 20,2019 22:43"}</Text>
-                            <Text style={styles.value}>{"0.01CAIC"}</Text>
-                        </View>
-                        <View style={styles.row}>
-                            <Text style={styles.time}>{"June 20,2019 22:43"}</Text>
-                            <Text style={styles.value}>{"0.01CAIC"}</Text>
-                        </View>
+                        {
+                            this.state.history.map((item, index) => {
+                                return (
+                                    <View style={styles.row} key={index}>
+                                        <Text style={styles.time}>{this.getDate(item.drawTime)}</Text>
+                                        <Text style={styles.value}>{`${item.drawPrize}CAIC`}</Text>
+                                    </View>
+                                )
+                            })
+                        }
                     </View>
                 </View>
             </View>
