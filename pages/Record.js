@@ -1,13 +1,13 @@
 import React from 'react';
 import {
-    StyleSheet,
     View,
     Text,
-    ScrollView
+    ScrollView,
+    TouchableOpacity,
+    StyleSheet
 } from 'react-native';
+import Back from '../component/Back';
 import axios from 'axios';
-
-const MONTH = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
 
 class Record extends React.Component {
 
@@ -36,17 +36,20 @@ class Record extends React.Component {
 
     getDate = (timestamp) => {
         let date = new Date(timestamp * 1000);
-        let month = date.getMonth() + 1,
+        let month = ("0" + (date.getMonth() + 1)).substr(-2),
             day = date.getDate(),
             year = date.getFullYear(),
             hour = "0" + date.getHours(),
             minute = "0" + date.getMinutes();
-        return `${MONTH[Number(month)]} ${day},${year}  ${hour.substr(-2)}:${minute.substr(-2)}`;
+        return `${year}-${month}-${day}  ${hour.substr(-2)}:${minute.substr(-2)}`;
     };
 
     render() {
         return (
             <View style={styles.container}>
+                <TouchableOpacity onPress={() => {this.props.navigation.goBack()}} style={styles.back}>
+                    <Back/>
+                </TouchableOpacity>
                 <View style={styles.bubble1}/>
                 <View style={styles.bubble2}/>
                 <View style={styles.bubble3}/>
@@ -87,6 +90,12 @@ const styles = StyleSheet.create({
         justifyContent: 'flex-start',
         alignItems: 'center',
         overflow: 'scroll'
+    },
+    back: {
+        position: 'absolute',
+        top: 10,
+        left: 10,
+        zIndex: 1
     },
     bubble1: {
         position: 'absolute',

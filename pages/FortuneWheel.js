@@ -13,10 +13,7 @@ import ResultModal from "../component/ResultModal";
 import {isIphoneX} from "../lib/is-iphone-x";
 import axios from 'axios';
 
-const PHONE_PREFIX = [
-    "134", "135", "136", "137", "138", "139", "147", "150", "151", "152", "157", "158", "159", "182", "187", "188",
-    "130", "131", "132", "133", "155", "156", "185", "186", "153", "180", "189"
-];
+const PHONE_PREFIX = ["090", "080", "070"];
 const REWARD = ["0.01", "0.01", "0.1", "0.1", "0.5", "0.5", "1", "5", "10"];
 
 export default class App extends React.Component {
