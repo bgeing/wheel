@@ -5,17 +5,19 @@ import Modal from "react-native-modal";
 export default class ResultModal extends React.Component {
 
     render() {
+        let { isOpen, closeModal, point } = this.props;
+
         return (
-            <Modal isVisible={this.props.isOpen} style={styles.modal}>
+            <Modal isVisible={isOpen} style={styles.modal}>
                 <View style={styles.container}>
                     <Image source={require('../static/images/pop_suisui.png')} style={styles.decorator}/>
                     <Image source={require('../static/images/pop_coin.png')} style={styles.coin}/>
                     <Text style={styles.text}>Congratulations!</Text>
-                    <TouchableOpacity style={styles.submitContainer} onPress={this.props.closeModal}>
+                    <TouchableOpacity style={styles.submitContainer} onPress={closeModal}>
                         <Image source={require('../static/images/pop_bg.png')} style={styles.button}/>
                         <View style={styles.btnTextContainer}>
                             <Text style={styles.info}>You've got </Text>
-                            <Text style={styles.earn}>10</Text>
+                            <Text style={styles.earn}>{point}</Text>
                             <Text style={styles.info}> CAICs</Text>
                         </View>
                     </TouchableOpacity>

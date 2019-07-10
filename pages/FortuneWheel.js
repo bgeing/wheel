@@ -4,14 +4,13 @@ import {
     View,
     ImageBackground,
     Image,
-    TouchableHighlight,
     TouchableOpacity,
     Animated,
     Easing
 } from 'react-native';
-import WinnerBanner from "./component/WinnerBanner";
-import ResultModal from "./component/ResultModal";
-import { isIphoneX } from "./lib/is-iphone-x";
+import WinnerBanner from "../component/WinnerBanner";
+import ResultModal from "../component/ResultModal";
+import {isIphoneX} from "../lib/is-iphone-x";
 import axios from 'axios';
 
 const PHONE_PREFIX = [
@@ -21,6 +20,10 @@ const PHONE_PREFIX = [
 const REWARD = ["0.01", "0.01", "0.1", "0.1", "0.5", "0.5", "1", "5", "10"];
 
 export default class App extends React.Component {
+
+    static navigationOptions = ({navigation}) => ({
+        headerStyle: {height: 0}
+    });
 
     state = {
         angle: new Animated.Value(0),
@@ -33,7 +36,7 @@ export default class App extends React.Component {
     };
 
     componentDidMount() {
-        setInterval(this._toggleLight.bind(this), 500);
+        setInterval(this.toggleLight.bind(this), 500);
         setInterval(this.setRandomRewardData.bind(this), 2000);
     }
 
@@ -51,7 +54,7 @@ export default class App extends React.Component {
         })
     };
 
-    _toggleLight = () => {
+    toggleLight = () => {
         this.setState({
             light: this.state.light === 0 ? 1 : 0
         })
@@ -59,32 +62,34 @@ export default class App extends React.Component {
 
     getAngle = () => {
         switch (this.state.res) {
-            case "0.01":
+            case 0.01:
                 return 0;
-            case "10":
+            case 10:
                 return 60;
-            case "5":
+            case 5:
                 return 120;
-            case "1":
+            case 1:
                 return 180;
-            case "0.5":
+            case 0.5:
                 return 240;
-            case "0.1":
+            case 0.1:
                 return 300;
             default:
                 return 0;
         }
     };
 
+    // 开始游戏
     getResult = async () => {
-        // Todo: Async request
-        let res = await axios.post('18.162.114.41:80/api/v1/gameinfo/get_draw_result', {
+        let res = await axios.post('http://18.162.114.41:80/api/v1/gameinfo/get_draw_result', {
             requestID: "1234567890",
             appID: "",
             userID: "abcd1234",
-            token: "abcefghijklmnopqrstuvewxyz"
+            token: "abcefghijklmnopqrstuvewxyz",
+            body: {}
         });
-        return res.data;
+
+        return res.data.body.value;
     };
 
     setRandomRewardData = () => {
@@ -98,7 +103,7 @@ export default class App extends React.Component {
 
     spin = async () => {
         if (this.state.enabled) {
-            let res = this.getResult();
+            let res = await this.getResult();
 
             this.setState({
                 enabled: false,
@@ -118,27 +123,32 @@ export default class App extends React.Component {
         }
     };
 
-    _renderWheel = () => {
+    jumpTo = dest => () => {
+        const {navigate} = this.props.navigation;
+        navigate(dest);
+    };
+
+    renderWheel = () => {
         return (
-            <ImageBackground source={require('./static/images/bg.png')} style={styles.container}>
+            <ImageBackground source={require('../static/images/bg.png')} style={styles.container}>
                 <TouchableOpacity style={{
                     position: 'absolute',
-                    top: isIphoneX() ? 30 : 0,
+                    top: isIphoneX() ? 0 : 0,
                     right: 30
-                }}>
-                    <Image source={require('./static/images/Rule.png')} style={styles.ruleBtn}/>
+                }} onPress={this.jumpTo('Rules')}>
+                    <Image source={require('../static/images/Rule.png')} style={styles.ruleBtn}/>
                 </TouchableOpacity>
                 <View>
-                    <Image source={require('./static/images/slogn.png')} style={styles.slogan}/>
+                    <Image source={require('../static/images/slogn.png')} style={styles.slogan}/>
                 </View>
-                <Image source={require('./static/images/piaofu.png')} style={styles.float}/>
+                <Image source={require('../static/images/piaofu.png')} style={styles.float}/>
                 <WinnerBanner phone={this.state.phone} reward={this.state.reward}/>
                 <View style={{justifyContent: 'center', alignItems: 'center'}}>
-                    <Image source={require('./static/images/panbg.png')} style={styles.wheelBg}/>
+                    <Image source={require('../static/images/panbg.png')} style={styles.wheelBg}/>
                     {
                         this.state.light === 0 ?
-                            <Image source={require('./static/images/deng1.png')} style={styles.light}/> :
-                            <Image source={require('./static/images/deng2.png')} style={styles.light}/>
+                            <Image source={require('../static/images/deng1.png')} style={styles.light}/> :
+                            <Image source={require('../static/images/deng2.png')} style={styles.light}/>
                     }
                     <Animated.View style={[styles.wheelContainer, {
                         transform: [
@@ -150,17 +160,17 @@ export default class App extends React.Component {
                             }
                         ]
                     }]}>
-                        <Image source={require('./static/images/panneiquan.png')} style={styles.wheel}/>
+                        <Image source={require('../static/images/panneiquan.png')} style={styles.wheel}/>
                     </Animated.View>
                     <TouchableOpacity style={styles.playBtnContainer} onPress={this.spin}
                                       activeOpacity={this.state.enabled ? 0.5 : 1}>
-                        <Image source={require('./static/images/choujiangbt.png')} style={styles.playBtn}/>
+                        <Image source={require('../static/images/choujiangbt.png')} style={styles.playBtn}/>
                     </TouchableOpacity>
                 </View>
                 <View style={styles.submitContainer}>
-                    <TouchableHighlight>
-                        <Image source={require('./static/images/button.png')} style={styles.submit}/>
-                    </TouchableHighlight>
+                    <TouchableOpacity onPress={this.jumpTo("Record")} activeOpacity={0.7}>
+                        <Image source={require('../static/images/button.png')} style={styles.submit}/>
+                    </TouchableOpacity>
                 </View>
             </ImageBackground>
         );
@@ -169,8 +179,8 @@ export default class App extends React.Component {
     render() {
         return (
             <View style={styles.container}>
-                {this._renderWheel()}
-                <ResultModal isOpen={this.state.modalOpen} closeModal={this.closeModal} point={10}/>
+                {this.renderWheel()}
+                <ResultModal isOpen={this.state.modalOpen} closeModal={this.closeModal} point={this.state.res}/>
             </View>
         );
     }

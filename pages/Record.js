@@ -2,49 +2,54 @@ import React from 'react';
 import {
     StyleSheet,
     View,
-    Text
+    Text,
+    ScrollView
 } from 'react-native';
+import axios from 'axios';
+
+const MONTH = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
 
 class Record extends React.Component {
 
-    constructor(props) {
-        super(props);
+    static navigationOptions = ({navigation}) => ({
+        headerStyle: {height: 0}
+    });
 
-        this.state = {
-            history: []
-        }
-    }
+    state = {
+        history: []
+    };
 
     componentDidMount() {
-        axios.post('18.162.114.41:80/api/v1/gameinfo/get_draw_history', {
+        axios.post('http://18.162.114.41:80/api/v1/gameinfo/get_draw_history', {
             requestID: "1234567890",
             appID: "",
             userID: "abcd1234",
-            token: "abcefghijklmnopqrstuvewxyz"
+            token: "abcefghijklmnopqrstuvewxyz",
+            body: {}
         })
             .then(res => {
                 this.setState({
-                    history: res.data.history
+                    history: res.data.body.history.reverse()
                 })
             });
     }
 
     getDate = (timestamp) => {
-        let date = new Date(timestamp);
+        let date = new Date(timestamp * 1000);
         let month = date.getMonth() + 1,
             day = date.getDate(),
             year = date.getFullYear(),
             hour = "0" + date.getHours(),
-            minute = "0" + data.getMinutes();
-        return `${month} ${day},${year} ${hour.substr(-2)}:${minute.substr(-2)}}`;
+            minute = "0" + date.getMinutes();
+        return `${MONTH[Number(month)]} ${day},${year}  ${hour.substr(-2)}:${minute.substr(-2)}`;
     };
 
     render() {
         return (
             <View style={styles.container}>
-                <View style={styles.bubble1} />
-                <View style={styles.bubble2} />
-                <View style={styles.bubble3} />
+                <View style={styles.bubble1}/>
+                <View style={styles.bubble2}/>
+                <View style={styles.bubble3}/>
                 <View>
                     <Text style={styles.title}>Winning Record</Text>
                 </View>
@@ -53,18 +58,19 @@ class Record extends React.Component {
                         <Text style={styles.headerTitle}>time</Text>
                         <Text style={styles.headerTitle}>Prize</Text>
                     </View>
-                    <View style={styles.list}>
+                    <ScrollView>
                         {
                             this.state.history.map((item, index) => {
                                 return (
                                     <View style={styles.row} key={index}>
                                         <Text style={styles.time}>{this.getDate(item.drawTime)}</Text>
-                                        <Text style={styles.value}>{`${item.drawPrize}CAIC`}</Text>
+                                        <Text
+                                            style={styles.value}>{`${Number(Number(item.drawPrize).toFixed(2))} CAIC`}</Text>
                                     </View>
                                 )
                             })
                         }
-                    </View>
+                    </ScrollView>
                 </View>
             </View>
         )
@@ -79,7 +85,8 @@ const styles = StyleSheet.create({
         flex: 1,
         flexDirection: 'column',
         justifyContent: 'flex-start',
-        alignItems: 'center'
+        alignItems: 'center',
+        overflow: 'scroll'
     },
     bubble1: {
         position: 'absolute',
@@ -148,15 +155,19 @@ const styles = StyleSheet.create({
     row: {
         flex: 1,
         flexDirection: 'row',
-        justifyContent: 'space-around',
-        maxHeight: 40
+        justifyContent: 'space-between',
+        height: 30,
+        maxHeight: 30,
+        marginLeft: 25,
+        marginRight: 25,
+        marginTop: 10
     },
     time: {
-        fontSize: 18,
+        fontSize: 16,
         color: '#999'
     },
     value: {
-        fontSize: 18,
+        fontSize: 16,
         color: '#000'
     }
 });
